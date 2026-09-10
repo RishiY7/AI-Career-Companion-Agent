@@ -1,4 +1,4 @@
-﻿# InternMatch AI — System Architecture Diagram
+﻿# AI Career Companion Agent for Internship Matching and Interview Preparation — System Architecture Diagram
 
 ## §8 System Architecture
 

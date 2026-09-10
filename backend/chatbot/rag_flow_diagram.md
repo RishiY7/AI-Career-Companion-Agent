@@ -1,4 +1,4 @@
-﻿# InternMatch AI — RAG Pipeline Flow Diagram
+﻿# AI Career Companion Agent for Internship Matching and Interview Preparation — RAG Pipeline Flow Diagram
 
 ## §3 RAG Implementation — Full Flow
 
@@ -84,7 +84,7 @@ User types: "How does internship matching work?"
  ┌────────────────────────────────────────────────────┐
  │ [SYSTEM]                                           │
  │ You are a helpful Product Assistant for            │
- │ InternMatch AI. Answer ONLY using the provided    │
+ │ AI Career Companion Agent for Internship Matching and Interview Preparation. Answer ONLY using the provided    │
  │ documentation context and conversation history.   │
  │                                                    │
  │ [HUMAN] <turn 1 from history>                      │
@@ -108,7 +108,7 @@ User types: "How does internship matching work?"
  LangChain LCEL: prompt | ChatGroq | StrOutputParser
          │
          ▼
- Response: "InternMatch AI uses FAISS vector similarity..."
+ Response: "AI Career Companion Agent for Internship Matching and Interview Preparation uses FAISS vector similarity..."
          │
          ▼
  Store both messages in PostgreSQL:
@@ -119,7 +119,7 @@ User types: "How does internship matching work?"
          ▼
  Return to frontend:
  {
-   "response": "InternMatch AI uses FAISS...",
+   "response": "AI Career Companion Agent for Internship Matching and Interview Preparation uses FAISS...",
    "session_id": "uuid-...",
    "source_chunks": [
      {"content": "chunk text", "source": "product_knowledge.md"},

@@ -36,7 +36,7 @@ CHUNK_OVERLAP   = 50
 
 def build_index():
     print("=" * 60)
-    print("InternMatch AI — Product Knowledge Indexer (PDF Edition)")
+    print("AI Career Companion Agent for Internship Matching and Interview Preparation — Product Knowledge Indexer (PDF Edition)")
     print("=" * 60)
 
     # Step 1: Load the document

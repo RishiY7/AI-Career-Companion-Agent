@@ -1,4 +1,4 @@
-# InternMatch AI — Full-Stack Internship Matching Platform
+# AI Career Companion Agent for Internship Matching and Interview Preparation — Full-Stack Internship Matching Platform
 
 An AI-powered internship matching platform with a **Product Assistant Chatbot**. Uses RAG (Retrieval-Augmented Generation) to semantically match candidates to internships, generate personalised cover letters, identify skill gaps, and answer questions about the product using its own documentation.
 
@@ -12,7 +12,7 @@ An AI-powered internship matching platform with a **Product Assistant Chatbot**.
 | **AI Internship Matching** | FAISS vector similarity search + LLM rationale for top 3 matched internships |
 | **Cover Letter Generator** | Personalised cover letter per listing using Gemini (Groq fallback) |
 | **Skill Gap Analysis** | Bullet-point list of skills you're missing for a target role |
-| **💬 Product Assistant Chatbot** | RAG chatbot that answers questions about InternMatch AI using its own documentation, with multi-turn conversation memory per user and session |
+| **💬 Product Assistant Chatbot** | RAG chatbot that answers questions about AI Career Companion Agent for Internship Matching and Interview Preparation using its own documentation, with multi-turn conversation memory per user and session |
 
 ---
 
@@ -183,7 +183,7 @@ curl -X POST http://localhost:8000/api/chat/session \
 # Send a message
 curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"user_id": 1, "session_id": "<session_id>", "message": "What is InternMatch AI?"}'
+  -d '{"user_id": 1, "session_id": "<session_id>", "message": "What is AI Career Companion Agent for Internship Matching and Interview Preparation?"}'
 ```
 
 ---

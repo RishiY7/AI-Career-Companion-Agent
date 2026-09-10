@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InternMatch AI",
+  title: "AI Career Companion Agent for Internship Matching and Interview Preparation",
   description: "AI-powered internship matching platform",
 };
 

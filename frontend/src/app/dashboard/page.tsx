@@ -1110,7 +1110,7 @@ export default function Dashboard() {
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                     <p style={{ fontSize: "1rem", fontWeight: 500 }}>Start a new chat or pick a session</p>
-                    <p style={{ fontSize: "0.85rem" }}>Ask me anything about InternMatch AI!</p>
+                    <p style={{ fontSize: "0.85rem" }}>Ask me anything about AI Career Companion Agent for Internship Matching and Interview Preparation!</p>
                     <button className="btn" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", fontWeight: 600 }} onClick={createNewSession}>
                       Start Chatting
                     </button>
@@ -1169,7 +1169,7 @@ export default function Dashboard() {
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
-                        placeholder="Ask anything about InternMatch AI… (Enter to send, Shift+Enter for new line)"
+                        placeholder="Ask anything about AI Career Companion Agent for Internship Matching and Interview Preparation… (Enter to send, Shift+Enter for new line)"
                         rows={2}
                         style={{
                           flex: 1, resize: "none", padding: "0.75rem 1rem", borderRadius: "12px",

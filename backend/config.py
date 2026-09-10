@@ -1,4 +1,4 @@
-# Central configuration for the InternMatch AI backend
+# Central configuration for the AI Career Companion Agent for Internship Matching and Interview Preparation backend
 
 # --- LLM Routing ---
 # Groq: ultra-fast inference — used for RAG match evaluation and skill gap analysis

@@ -142,7 +142,7 @@ export default function Home() {
               background: "linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
             }}>
-              InternMatch AI
+              AI Career Companion Agent for Internship Matching and Interview Preparation
             </span>
           </div>
 
@@ -330,7 +330,7 @@ export default function Home() {
 
             <div style={{ marginTop: "1.5rem", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1.25rem" }}>
               <span style={{ color: "rgba(160,160,200,0.5)", fontSize: "0.875rem" }}>
-                {isLogin ? "New to InternMatch AI? " : "Already have an account? "}
+                {isLogin ? "New to AI Career Companion Agent for Internship Matching and Interview Preparation? " : "Already have an account? "}
               </span>
               <button
                 style={{ background: "transparent", border: "none", cursor: "pointer", fontWeight: 700, fontSize: "0.875rem", color: "#818cf8", fontFamily: "inherit" }}

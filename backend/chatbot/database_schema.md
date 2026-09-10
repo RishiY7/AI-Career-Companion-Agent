@@ -1,4 +1,4 @@
-﻿# InternMatch AI — Database Schema
+﻿# AI Career Companion Agent for Internship Matching and Interview Preparation — Database Schema
 
 ## Tables Overview
 
@@ -125,7 +125,7 @@ The `source_chunks` column stores a JSON array of the RAG chunks used to generat
 ```json
 [
   {
-    "content": "InternMatch AI uses FAISS vector similarity search...",
+    "content": "AI Career Companion Agent for Internship Matching and Interview Preparation uses FAISS vector similarity search...",
     "source": "product_knowledge.md"
   },
   {

@@ -1,6 +1,6 @@
-﻿# InternMatch AI — Product Knowledge Document
+﻿# AI Career Companion Agent for Internship Matching and Interview Preparation — Product Knowledge Document
 
-> This document serves as the primary knowledge base for the InternMatch AI Product Assistant Chatbot.
+> This document serves as the primary knowledge base for the AI Career Companion Agent for Internship Matching and Interview Preparation Product Assistant Chatbot.
 > It covers the product overview, all features, usage guide, architecture, and technology stack.
 
 ---
@@ -8,13 +8,13 @@
 ## 1. Product Overview
 
 ### Product Name
-**InternMatch AI**
+**AI Career Companion Agent for Internship Matching and Interview Preparation**
 
 ### Product Description
-InternMatch AI is an AI-powered internship matching platform that helps students and fresh graduates find the most relevant internship opportunities. It uses Retrieval-Augmented Generation (RAG) and large language models (LLMs) to intelligently parse resumes, match candidates to internships, generate personalised cover letters, and identify skill gaps — all in one unified dashboard.
+AI Career Companion Agent for Internship Matching and Interview Preparation is an AI-powered internship matching platform that helps students and fresh graduates find the most relevant internship opportunities. It uses Retrieval-Augmented Generation (RAG) and large language models (LLMs) to intelligently parse resumes, match candidates to internships, generate personalised cover letters, and identify skill gaps — all in one unified dashboard.
 
 ### Problem the Product Solves
-Finding internships is time-consuming and imprecise. Students spend hours manually reading job descriptions and tailoring applications. Recruiters spend equal time sifting through irrelevant resumes. InternMatch AI eliminates this friction by:
+Finding internships is time-consuming and imprecise. Students spend hours manually reading job descriptions and tailoring applications. Recruiters spend equal time sifting through irrelevant resumes. AI Career Companion Agent for Internship Matching and Interview Preparation eliminates this friction by:
 - Automatically parsing and understanding resume content using AI
 - Semantically matching candidates to relevant internships using vector similarity
 - Generating personalised cover letters in seconds
@@ -52,7 +52,7 @@ Allow users to submit their resume so the system can extract structured informat
 6. Background processing immediately triggers the AI matching engine
 
 **How Users Can Use It:**
-1. Log in to the InternMatch AI dashboard
+1. Log in to the AI Career Companion Agent for Internship Matching and Interview Preparation dashboard
 2. Click the "Upload Resume" button on the Overview tab
 3. Select a PDF file from your device
 4. Click "Upload and Analyse"
@@ -152,7 +152,7 @@ Show candidates exactly which skills they are missing for a target internship ro
 **Feature Name:** Product Assistant Chatbot
 
 **Purpose:**
-Provide an intelligent conversational assistant that answers any question about InternMatch AI — how to use it, how it works, its architecture, and technology — using this product knowledge document as its knowledge source.
+Provide an intelligent conversational assistant that answers any question about AI Career Companion Agent for Internship Matching and Interview Preparation — how to use it, how it works, its architecture, and technology — using this product knowledge document as its knowledge source.
 
 **How It Works:**
 1. The user types a question in the chat interface
@@ -166,7 +166,7 @@ Provide an intelligent conversational assistant that answers any question about 
 
 **How Users Can Use It:**
 1. Log in and click the "Product Assistant" tab in the dashboard sidebar
-2. Type any question about InternMatch AI
+2. Type any question about AI Career Companion Agent for Internship Matching and Interview Preparation
 3. Press Enter or click Send
 4. The chatbot responds using the product documentation
 5. Ask follow-up questions — the chatbot remembers the conversation within the session
@@ -193,7 +193,7 @@ Provide an intelligent conversational assistant that answers any question about 
 ### Detailed Step-by-Step Guide
 
 **Step 1 — Register an Account**
-- Visit the InternMatch AI homepage
+- Visit the AI Career Companion Agent for Internship Matching and Interview Preparation homepage
 - Click "Get Started" or "Register"
 - Enter your email address and a password
 - Submit the form
@@ -227,7 +227,7 @@ Provide an intelligent conversational assistant that answers any question about 
 
 **Step 7 — Use the Product Assistant**
 - Click "Product Assistant" in the sidebar
-- Type any question about InternMatch AI
+- Type any question about AI Career Companion Agent for Internship Matching and Interview Preparation
 - Examples: "How does matching work?", "What is RAG?", "How do I upload a resume?"
 - Press Enter to submit
 - Ask follow-up questions — the assistant remembers the conversation
