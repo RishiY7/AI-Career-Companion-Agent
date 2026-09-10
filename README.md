@@ -1,4 +1,4 @@
-# AI Career Companion Agent for Internship Matching and Interview Preparation — Full-Stack Internship Matching Platform
+# AI Career Companion Agent for Internship Matching and Interview Preparation
 
 An AI-powered internship matching platform with a **Product Assistant Chatbot**. Uses RAG (Retrieval-Augmented Generation) to semantically match candidates to internships, generate personalised cover letters, identify skill gaps, and answer questions about the product using its own documentation.
 
