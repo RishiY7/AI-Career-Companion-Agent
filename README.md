@@ -1,4 +1,4 @@
-# AI Career Companion Agent
+# AI Career Companion Agent for Internship Matching and Interview Preparation
 
 An AI-powered full-stack web app for internship matching and interview preparation. Upload your resume → get matched to internships → prepare for interviews with a personalised AI coach.
 
