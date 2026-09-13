@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Hexagon, LayoutDashboard, Briefcase, User, Settings, MessageSquare, LogOut } from "lucide-react";
+import { Hexagon, LayoutDashboard, Briefcase, User, Settings, MessageSquare, LogOut, BrainCircuit } from "lucide-react";
 
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
@@ -369,6 +369,10 @@ export default function Dashboard() {
           <button className={"nav-item " + (activeTab === "chat" ? "active" : "")} onClick={() => { setActiveTab("chat"); fetchChatSessions(); }}>
             <MessageSquare size={20} strokeWidth={2} />
             Product Assistant
+          </button>
+          <button className="nav-item" onClick={() => router.push("/dashboard/interview")}>
+            <BrainCircuit size={20} strokeWidth={2} />
+            Interview Prep
           </button>
           <div style={{ flex: 1 }} />
           <button className="nav-item" style={{ color: "#ef4444" }} onClick={() => { localStorage.removeItem("user_id"); router.push("/"); }}>
