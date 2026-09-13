@@ -16,7 +16,7 @@ from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI  # kept for cover letter generation
 from config import GROQ_MODEL, GEMINI_MODEL
 
-# --- Chatbot: lazy-loaded singleton (loads FAISS index on first /api/chat call) ---
+# --- Product Chatbot: lazy-loaded singleton (loads FAISS index on first /api/chat call) ---
 _chatbot = None
 def get_chatbot():
     global _chatbot
@@ -24,6 +24,15 @@ def get_chatbot():
         from chatbot.chat_engine import ProductChatbot
         _chatbot = ProductChatbot()
     return _chatbot
+
+# --- Interview Prep Agent: lazy-loaded singleton (no FAISS — resume injected from DB) ---
+_interview_agent = None
+def get_interview_agent():
+    global _interview_agent
+    if _interview_agent is None:
+        from interview_agent.agent import InterviewPrepAgent
+        _interview_agent = InterviewPrepAgent()
+    return _interview_agent
 
 # Create DB tables
 Base.metadata.create_all(bind=engine)
@@ -68,6 +77,12 @@ class InsightRequest(BaseModel):
     user_id: int
     company: str
     title: str
+
+class InterviewChatRequest(BaseModel):
+    user_id:     int
+    session_id:  str
+    message:     str
+    doc_context: Optional[str] = ""   # text extracted from an uploaded doc; empty if none
 
 # --- Helpers ---
 def extract_text_from_pdf(file_bytes: bytes) -> str:
@@ -430,3 +445,97 @@ def submit_feedback(req: FeedbackRequest, db: Session = Depends(get_db)):
     msg.feedback = req.feedback
     db.commit()
     return {"message": "Feedback recorded", "message_id": req.message_id, "feedback": req.feedback}
+
+
+# =============================================================================
+# INTERVIEW PREP AGENT ENDPOINTS
+# Standalone feature — separate from Product Chatbot (/api/chat/*)
+# Context: user's parsed resume from DB (no FAISS)
+# Session IDs are prefixed with "interview-" to isolate from chatbot sessions
+# =============================================================================
+
+# --- POST /api/interview/session ---
+@app.post("/api/interview/session")
+def create_interview_session(req: NewSessionRequest, db: Session = Depends(get_db)):
+    """Create a new interview prep session. Returns a prefixed UUID session_id."""
+    user = db.query(models.User).filter(models.User.id == req.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    session_id = "interview-" + str(uuid.uuid4())
+    return {"session_id": session_id, "user_id": req.user_id}
+
+
+# --- GET /api/interview/sessions/{user_id} ---
+@app.get("/api/interview/sessions/{user_id}")
+def list_interview_sessions(user_id: int, db: Session = Depends(get_db)):
+    """List all interview prep sessions for a user, newest first."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        agent    = get_interview_agent()
+        sessions = agent.get_sessions_for_api(user_id, db)
+        return {"user_id": user_id, "sessions": sessions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not retrieve sessions: {e}")
+
+
+# --- POST /api/interview/chat ---
+@app.post("/api/interview/chat")
+def interview_chat(req: InterviewChatRequest, db: Session = Depends(get_db)):
+    """
+    Main interview prep endpoint.
+    Reads the user's active resume from DB, detects intent, calls Groq LLM.
+    Optionally accepts doc_context (text from an uploaded PDF/DOCX) for document Q&A.
+    """
+    user = db.query(models.User).filter(models.User.id == req.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not req.message.strip():
+        raise HTTPException(status_code=422, detail="Message cannot be empty")
+    try:
+        agent  = get_interview_agent()
+        result = agent.chat(
+            user_id=req.user_id,
+            session_id=req.session_id,
+            query=req.message.strip(),
+            db=db,
+            doc_context=req.doc_context or "",
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Interview agent failed: {e}")
+
+
+# --- POST /api/interview/upload_doc ---
+@app.post("/api/interview/upload_doc")
+async def interview_upload_doc(file: UploadFile = File(...)):
+    """
+    Upload a PDF or DOCX document.
+    Returns the extracted plain text as doc_context — the frontend passes this
+    back on subsequent /api/interview/chat calls for document-based Q&A.
+    """
+    try:
+        from interview_agent.doc_parser import extract_document_text
+        content = await file.read()
+        text    = extract_document_text(content, file.filename)
+        return {"filename": file.filename, "doc_context": text}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Document extraction failed: {e}")
+
+
+# --- GET /api/interview/history/{user_id}/{session_id} ---
+@app.get("/api/interview/history/{user_id}/{session_id}")
+def get_interview_history(user_id: int, session_id: str, db: Session = Depends(get_db)):
+    """Retrieve full conversation history for a specific interview prep session."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        agent   = get_interview_agent()
+        history = agent.get_history_for_api(user_id, session_id, db)
+        return {"user_id": user_id, "session_id": session_id, "messages": history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not retrieve history: {e}")
