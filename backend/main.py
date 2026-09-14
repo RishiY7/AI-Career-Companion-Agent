@@ -547,3 +547,79 @@ def get_interview_history(user_id: int, session_id: str, db: Session = Depends(g
         return {"user_id": user_id, "session_id": session_id, "messages": history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not retrieve history: {e}")
+
+
+# ── INTERNSHIP APPLICATION TRACKING ──────────────────────────────────────────
+
+# POST /api/apply — record that a user clicked Apply on an internship
+@app.post("/api/apply")
+def apply_to_internship(req: ApplyRequest, db: Session = Depends(get_db)):
+    """Record an internship application. Returns early (without error) if already applied."""
+    user = db.query(models.User).filter(models.User.id == req.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    # Deduplicate: same user + same title + same company = same application
+    existing = db.query(models.InternshipApplication).filter(
+        models.InternshipApplication.user_id == req.user_id,
+        models.InternshipApplication.title   == req.title,
+        models.InternshipApplication.company == req.company,
+    ).first()
+    if existing:
+        return {"message": "Already applied", "application_id": existing.id, "already_applied": True}
+    record = models.InternshipApplication(
+        user_id=req.user_id, title=req.title, company=req.company,
+        location=req.location, duration=req.duration,
+        skills=req.skills, apply_url=req.apply_url,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return {"message": "Application recorded", "application_id": record.id, "already_applied": False}
+
+
+# GET /api/applications/{user_id} — list all applications for a user, newest first
+@app.get("/api/applications/{user_id}")
+def get_applications(user_id: int, db: Session = Depends(get_db)):
+    apps = (
+        db.query(models.InternshipApplication)
+        .filter(models.InternshipApplication.user_id == user_id)
+        .order_by(models.InternshipApplication.applied_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id":         a.id,
+            "title":      a.title,
+            "company":    a.company,
+            "location":   a.location,
+            "duration":   a.duration,
+            "skills":     a.skills,
+            "apply_url":  a.apply_url,
+            "applied_at": a.applied_at.isoformat() if a.applied_at else None,
+            "status":     a.status,
+        }
+        for a in apps
+    ]
+
+
+# PATCH /api/applications/{application_id}/status — update pipeline status
+@app.patch("/api/applications/{application_id}/status")
+def update_application_status(
+    application_id: int,
+    status: str,
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    record = db.query(models.InternshipApplication).filter(
+        models.InternshipApplication.id      == application_id,
+        models.InternshipApplication.user_id == user_id,
+    ).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Application not found")
+    valid = ["applied", "interviewing", "offered", "rejected"]
+    if status not in valid:
+        raise HTTPException(status_code=422, detail=f"Status must be one of {valid}")
+    record.status = status
+    db.commit()
+    return {"message": "Status updated", "status": status}
+

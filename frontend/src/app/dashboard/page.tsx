@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Hexagon, LayoutDashboard, Briefcase, User, Settings, MessageSquare, LogOut, BrainCircuit } from "lucide-react";
+import { Hexagon, LayoutDashboard, Briefcase, User, Settings, MessageSquare, LogOut, BrainCircuit, CheckCircle2 } from "lucide-react";
 
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,6 +9,9 @@ export default function Dashboard() {
   const [matches, setMatches] = useState<any>(null);
   const [resumes, setResumes] = useState<any[]>([]);
   const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set()); // "title|company" key
+  const [applyingKey, setApplyingKey] = useState<string | null>(null);  // card currently loading
   const [oppSearch, setOppSearch] = useState("");
   const [oppFilter, setOppFilter] = useState("All");
   const [error, setError] = useState("");
@@ -44,6 +47,7 @@ export default function Dashboard() {
     fetchMatches();
     fetchResumes();
     fetchOpportunities();
+    fetchApplications();
     fetchChatSessions();
     // Load saved profile, merging in the stored full_name from signup
     const saved = localStorage.getItem("profile_" + userId);
@@ -84,6 +88,42 @@ export default function Dashboard() {
         setOpportunities(Array.isArray(data) ? data : []);
       }
     } catch { console.log("Failed to fetch opportunities"); }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/applications/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setApplications(Array.isArray(data) ? data : []);
+        setAppliedIds(new Set(data.map((a: any) => `${a.title}|${a.company}`)));
+      }
+    } catch { console.log("Failed to fetch applications"); }
+  };
+
+  const handleApply = async (opp: any) => {
+    const key = `${opp.title}|${opp.company}`;
+    setApplyingKey(key);
+    try {
+      await fetch("http://localhost:8000/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id:   Number(userId),
+          title:     opp.title,
+          company:   opp.company,
+          location:  opp.location  || "",
+          duration:  opp.duration  || "",
+          skills:    opp.skills    || "",
+          apply_url: opp.apply_url || `https://www.google.com/search?q=${encodeURIComponent(opp.title + " " + opp.company + " internship apply")}`,
+        }),
+      });
+      setAppliedIds(prev => new Set([...prev, key]));
+      fetchApplications();
+      const url = opp.apply_url || `https://www.google.com/search?q=${encodeURIComponent(opp.title + " " + opp.company + " internship apply")}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch { console.log("Failed to record application"); }
+    finally { setApplyingKey(null); }
   };
 
   const fetchMatches = async () => {
@@ -374,6 +414,10 @@ export default function Dashboard() {
             <BrainCircuit size={20} strokeWidth={2} />
             Interview Prep
           </button>
+          <button className={"nav-item " + (activeTab === "applied" ? "active" : "")} onClick={() => { setActiveTab("applied"); fetchApplications(); }}>
+            <CheckCircle2 size={20} strokeWidth={2} />
+            Applied ({applications.length})
+          </button>
           <div style={{ flex: 1 }} />
           <button className="nav-item" style={{ color: "#ef4444" }} onClick={() => { localStorage.removeItem("user_id"); router.push("/"); }}>
             <LogOut size={20} strokeWidth={2} />
@@ -387,6 +431,7 @@ export default function Dashboard() {
           <div className="header-title">
             {activeTab === "dashboard" && "Overview"}
             {activeTab === "opportunities" && "Browse Opportunities"}
+            {activeTab === "applied" && "✅ Applied Internships"}
             {activeTab === "profile" && "My Profile"}
             {activeTab === "settings" && "Settings"}
             {activeTab === "chat" && "💬 Product Assistant"}
@@ -801,24 +846,37 @@ export default function Dashboard() {
                           </div>
 
                           {/* Apply Button */}
-                          <div style={{ marginTop: "0.25rem", display: "flex", justifyContent: "flex-end" }}>
-                            <a
-                              href={opp.apply_url || `https://www.google.com/search?q=${encodeURIComponent(opp.title + " " + opp.company + " internship apply")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                                padding: "0.45rem 1.1rem", borderRadius: "var(--radius-sm)",
-                                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                                color: "white", fontSize: "0.8rem", fontWeight: 700, textDecoration: "none",
-                                transition: "all 0.2s", boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-                              }}
-                              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(99,102,241,0.45)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(99,102,241,0.3)"; }}
-                            >
-                              🚀 Apply Now
-                            </a>
-                          </div>
+                          {(() => {
+                            const key = `${opp.title}|${opp.company}`;
+                            const isApplied  = appliedIds.has(key);
+                            const isApplying = applyingKey === key;
+                            return (
+                              <div style={{ marginTop: "0.25rem", display: "flex", justifyContent: "flex-end" }}>
+                                <button
+                                  onClick={() => !isApplied && !isApplying && handleApply(opp)}
+                                  disabled={isApplied || isApplying}
+                                  style={{
+                                    display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                                    padding: "0.45rem 1.1rem", borderRadius: "var(--radius-sm)",
+                                    background: isApplied
+                                      ? "rgba(52,211,153,0.15)"
+                                      : isApplying
+                                      ? "rgba(99,102,241,0.4)"
+                                      : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                                    border: isApplied ? "1px solid rgba(52,211,153,0.4)" : "none",
+                                    color: isApplied ? "#34d399" : "white",
+                                    fontSize: "0.8rem", fontWeight: 700,
+                                    cursor: isApplied ? "default" : isApplying ? "not-allowed" : "pointer",
+                                    transition: "all 0.2s",
+                                    boxShadow: isApplied || isApplying ? "none" : "0 4px 12px rgba(99,102,241,0.3)",
+                                    fontFamily: "inherit",
+                                  }}
+                                >
+                                  {isApplying ? "Applying…" : isApplied ? "✓ Applied" : "🚀 Apply Now"}
+                                </button>
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}
@@ -827,6 +885,95 @@ export default function Dashboard() {
               </div>
             );
           })()}
+
+          {/* ============================================================
+              APPLIED INTERNSHIPS TAB
+          ============================================================ */}
+          {activeTab === "applied" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div className="card">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                  <h2 className="card-title" style={{ margin: 0 }}>✅ Applied Internships</h2>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{applications.length} total</span>
+                </div>
+
+                {applications.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📋</div>
+                    <div style={{ fontWeight: 600, marginBottom: "0.4rem", color: "var(--text-secondary)" }}>No applications yet</div>
+                    <div style={{ fontSize: "0.85rem" }}>Click "Apply Now" on any internship to track it here.</div>
+                    <button
+                      onClick={() => setActiveTab("opportunities")}
+                      style={{ marginTop: "1rem", padding: "0.5rem 1.25rem", borderRadius: "8px", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: "0.875rem", fontFamily: "inherit" }}
+                    >
+                      Browse Opportunities →
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+                    {applications.map((app: any) => {
+                      const statusColors: Record<string, { bg: string; color: string; border: string }> = {
+                        applied:      { bg: "rgba(99,102,241,0.12)",  color: "#a5b4fc", border: "rgba(99,102,241,0.3)"  },
+                        interviewing: { bg: "rgba(245,158,11,0.12)",  color: "#fcd34d", border: "rgba(245,158,11,0.3)"  },
+                        offered:      { bg: "rgba(52,211,153,0.12)",  color: "#34d399", border: "rgba(52,211,153,0.3)"  },
+                        rejected:     { bg: "rgba(239,68,68,0.12)",   color: "#f87171", border: "rgba(239,68,68,0.3)"   },
+                      };
+                      const sc = statusColors[app.status] || statusColors.applied;
+                      const appliedDate = app.applied_at
+                        ? new Date(app.applied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                        : "";
+                      return (
+                        <div key={app.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: "180px" }}>
+                            <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)", marginBottom: "0.15rem" }}>{app.title}</div>
+                            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                              {app.company}{app.location ? ` · ${app.location}` : ""}
+                            </div>
+                            {app.duration && (
+                              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>⏱ {app.duration}</div>
+                            )}
+                          </div>
+
+                          {/* Applied date */}
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                            Applied {appliedDate}
+                          </div>
+
+                          {/* Status badge + update dropdown */}
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "0.25rem 0.7rem", borderRadius: "50px", background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, whiteSpace: "nowrap", textTransform: "capitalize" }}>
+                              {app.status}
+                            </span>
+                            <select
+                              value={app.status}
+                              onChange={async (e) => {
+                                await fetch(`http://localhost:8000/api/applications/${app.id}/status?user_id=${userId}&status=${e.target.value}`, { method: "PATCH" });
+                                fetchApplications();
+                              }}
+                              style={{ fontSize: "0.75rem", padding: "0.2rem 0.4rem", borderRadius: "6px", background: "var(--bg-card)", border: "1px solid var(--border-bright)", color: "var(--text-secondary)", cursor: "pointer", fontFamily: "inherit" }}
+                            >
+                              <option value="applied">Applied</option>
+                              <option value="interviewing">Interviewing</option>
+                              <option value="offered">Offered 🎉</option>
+                              <option value="rejected">Rejected</option>
+                            </select>
+                          </div>
+
+                          {/* Re-open link */}
+                          {app.apply_url && (
+                            <a href={app.apply_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "#818cf8", fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+                              Open ↗
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ============================================================
               PROFILE TAB
