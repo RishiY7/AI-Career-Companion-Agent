@@ -20,12 +20,12 @@ sys.path.append(BACKEND_DIR)
 from dotenv import load_dotenv
 load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
-from langchain_groq import ChatGroq
+from llm_client import get_llm  # Groq primary → Gemini fallback
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from sqlalchemy.orm import Session
 
-from config import GROQ_MODEL
+
 import models
 from interview_agent.prompts import (
     INTERVIEW_AGENT_SYSTEM,
@@ -57,8 +57,8 @@ class InterviewPrepAgent:
     """
 
     def __init__(self):
-        print("[InterviewAgent] Initialising Groq LLM...")
-        self.llm = ChatGroq(model=GROQ_MODEL, temperature=0.4, max_tokens=2048)
+        print("[InterviewAgent] Initialising LLM (Groq → Gemini fallback)...")
+        self.llm = get_llm(temperature=0.4, max_tokens=2048)
         print("[InterviewAgent] Ready.")
 
     # ------------------------------------------------------------------ #

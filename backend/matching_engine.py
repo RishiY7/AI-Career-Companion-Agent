@@ -1,13 +1,13 @@
 import os
 import json
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from config import GROQ_MODEL, GEMINI_MODEL, TOP_K_MATCHES
+from llm_client import get_llm  # Groq primary → Gemini fallback
 
 # Load Environment Variables (.env file containing GROQ_API_KEY)
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
@@ -27,19 +27,14 @@ class InternshipMatcher:
         except Exception as e:
             print(f"Error loading vector store from {vectorstore_path}: {e}")
             self.vectorstore = None
-            
-        # Groq â€” ultra-fast inference for RAG evaluation and skill gap (structured, concise)
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            print("WARNING: GROQ_API_KEY is not set.")
 
-        self.fast_llm = ChatGroq(
-            model=GROQ_MODEL,
+        # Groq (primary) → Gemini (fallback) — for RAG evaluation and skill gap analysis
+        self.fast_llm = get_llm(
             temperature=0.2,   # Low temperature for factual, grounded matching
             max_tokens=3500,   # High limit because reasoning models use a lot of tokens for <think> blocks
         )
 
-        # Gemini â€” multimodal + long-form for cover letter generation
+        # Gemini — stays as PRIMARY for cover letter generation (creative, long-form)
         gemini_api_key = os.getenv("GEMINI_API_KEY")
         if not gemini_api_key:
             print("WARNING: GEMINI_API_KEY is not set. Cover letter generation will fail.")

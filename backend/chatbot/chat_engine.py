@@ -19,7 +19,7 @@ sys.path.append(BACKEND_DIR)
 from dotenv import load_dotenv
 load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
-from langchain_groq import ChatGroq
+from llm_client import get_llm  # Groq primary → Gemini fallback
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
@@ -63,13 +63,9 @@ class ProductChatbot:
             allow_dangerous_deserialization=True,
         )
 
-        # Groq LLM — ultra-fast for real-time chat
-        print(f"[ChatEngine] Initialising Groq LLM: {GROQ_MODEL}")
-        self.llm = ChatGroq(
-            model=GROQ_MODEL,
-            temperature=0.3,
-            max_tokens=1024,
-        )
+        # Groq (primary) → Gemini (fallback) — automatic on any Groq exception
+        print(f"[ChatEngine] Initialising LLM: {GROQ_MODEL} (Gemini fallback enabled)")
+        self.llm = get_llm(temperature=0.3, max_tokens=1024)
         print("[ChatEngine] Ready.")
 
     # ------------------------------------------------------------------

@@ -12,8 +12,7 @@ from typing import List, Optional, Dict
 from database import engine, Base, get_db
 import models
 from matching_engine import InternshipMatcher
-from langchain_groq import ChatGroq
-from langchain_google_genai import ChatGoogleGenerativeAI  # kept for cover letter generation
+from llm_client import get_llm  # Groq primary → Gemini fallback
 from config import GROQ_MODEL, GEMINI_MODEL
 
 # --- Product Chatbot: lazy-loaded singleton (loads FAISS index on first /api/chat call) ---
@@ -100,7 +99,7 @@ def parse_resume(file_bytes: bytes, filename: str, raw_text: str) -> dict:
     Gemini is intentionally not used here — it's slow and rate-limited on free tier.
     """
     print("Parsing resume with Groq...")
-    llm = ChatGroq(model=GROQ_MODEL, temperature=0)
+    llm = get_llm(temperature=0, max_tokens=1024)  # Groq → Gemini fallback
     extraction_prompt = (
         "You are a resume parser. Extract the following fields from the resume text below and "
         "return ONLY a valid JSON object with these exact keys: "
