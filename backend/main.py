@@ -83,6 +83,15 @@ class InterviewChatRequest(BaseModel):
     message:     str
     doc_context: Optional[str] = ""   # text extracted from an uploaded doc; empty if none
 
+class ApplyRequest(BaseModel):
+    user_id:   int
+    title:     str
+    company:   str
+    location:  Optional[str] = ""
+    duration:  Optional[str] = ""
+    skills:    Optional[str] = ""
+    apply_url: Optional[str] = ""
+
 # --- Helpers ---
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     """Fallback: extract raw text using PyMuPDF (used for storing raw_text in DB)."""

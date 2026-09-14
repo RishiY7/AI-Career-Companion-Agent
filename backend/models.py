@@ -43,3 +43,19 @@ class ChatMessage(Base):
     # Bonus fields (§13)
     source_chunks = Column(JSON, nullable=True)    # RAG chunks used for this response
     feedback      = Column(String, nullable=True)  # "like" | "dislike" | None
+
+
+class InternshipApplication(Base):
+    """Tracks internships a user has applied to (via the Apply Now button)."""
+    __tablename__ = "internship_applications"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    user_id     = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title       = Column(String, nullable=False)
+    company     = Column(String, nullable=False)
+    location    = Column(String, nullable=True)
+    duration    = Column(String, nullable=True)
+    skills      = Column(String, nullable=True)
+    apply_url   = Column(String, nullable=True)
+    applied_at  = Column(DateTime, default=datetime.utcnow)
+    status      = Column(String, default="applied")  # "applied" | "interviewing" | "offered" | "rejected"
