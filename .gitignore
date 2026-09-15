@@ -12,16 +12,16 @@ venv/
 backend/vector_store/internships_faiss_index/
 backend/vector_store/product_faiss_index/
 
-# SQLite database (auto-created on first run)
-*.db
-*.sqlite3
-
 # Next.js build output
 frontend/.next/
 frontend/node_modules/
 frontend/tsconfig.tsbuildinfo
 
-# Personal / internal docs
+# Auto-generated files
+frontend/AGENTS.md
+frontend/CLAUDE.md
+
+# Internal project docs
 plan.md
 AGENTS.md
 Document Structure.docx
