@@ -14,6 +14,7 @@ An AI-powered full-stack web app for internship matching and interview preparati
 | **Skill Gap Analysis** | Bullet-point list of missing skills for a target role using Groq |
 | **Product Assistant Chatbot** | RAG chatbot answering questions about this platform using its own documentation, with per-user per-session conversation memory |
 | **Interview Prep Agent** | Standalone AI coach that reads your resume and helps with role recommendations, interview questions (technical + HR), answer guidance, preparation roadmap, and document-based Q&A (PDF/DOCX upload) |
+| **Application Tracker** | Track internship applications with pipeline status: Applied → Interviewing → Offered / Rejected |
 
 ---
 
@@ -23,7 +24,7 @@ An AI-powered full-stack web app for internship matching and interview preparati
 |-------|-----------|
 | Frontend | Next.js 14 (App Router) + TypeScript + Tailwind CSS |
 | Backend | FastAPI (Python) |
-| Database | SQLite via SQLAlchemy |
+| Database | PostgreSQL via SQLAlchemy (auto-created if not exists) |
 | Vector Store | FAISS (CPU) — local, no external service |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
 | LLM (fast) | Groq `groq/compound-mini` — resume parsing, matching, chatbot, interview agent |
@@ -37,9 +38,10 @@ An AI-powered full-stack web app for internship matching and interview preparati
 AI-Internship-Application/
 ├── backend/
 │   ├── main.py                        # All FastAPI routes
-│   ├── models.py                      # SQLAlchemy models: User, Resume, ChatMessage
-│   ├── database.py                    # SQLite engine + SessionLocal + get_db
+│   ├── models.py                      # SQLAlchemy models: User, Resume, ChatMessage, InternshipApplication
+│   ├── database.py                    # PostgreSQL engine + SessionLocal + get_db
 │   ├── config.py                      # LLM model name constants
+│   ├── llm_client.py                  # get_llm() — Groq primary + Gemini automatic fallback
 │   ├── matching_engine.py             # InternshipMatcher: FAISS + LLM rationale
 │   ├── migrate.py                     # DB migration helper
 │   ├── requirements.txt
@@ -128,6 +130,13 @@ AI-Internship-Application/
 | `POST` | `/api/interview/upload_doc` | Multipart PDF/DOCX → returns extracted text |
 | `GET` | `/api/interview/history/{user_id}/{session_id}` | Full history |
 
+### Application Tracker
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/api/apply` | `{user_id, title, company, location?, duration?, skills?, apply_url?}` → records application |
+| `GET` | `/api/applications/{user_id}` | List all applications, newest-first |
+| `PATCH` | `/api/applications/{application_id}/status?status=X&user_id=N` | Update status: `applied` / `interviewing` / `offered` / `rejected` |
+
 ---
 
 ## Setup
@@ -140,7 +149,7 @@ AI-Internship-Application/
 Create `.env` in the project root:
 ```env
 GROQ_API_KEY=your_groq_api_key
-GOOGLE_API_KEY=your_google_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### 2. Backend
@@ -198,11 +207,14 @@ cd frontend && npm run dev
 
 > Session IDs prefixed with `"interview-"` belong to the Interview Prep Agent. Plain UUIDs belong to the Product Chatbot.
 
+### `internship_applications`
+`id`, `user_id` (FK), `title`, `company`, `location`, `duration`, `skills`, `apply_url`, `applied_at`, `status` (`"applied"` / `"interviewing"` / `"offered"` / `"rejected"`)
+
 ---
 
 ## Limitations
 
 - **Small internship dataset** — demonstration only, not production scale
 - **No JWT auth** — `user_id` stored in `localStorage`; production would use JWT or HTTP-only cookies
-- **SQLite** — single-file DB, sufficient for development; swap to PostgreSQL for production via `database.py`
+- **PostgreSQL** — default connection is `localhost:5432/internship_db`; configure via `DATABASE_URL` in `.env` for a remote instance
 - **Groq model** — `groq/compound-mini` pinned in `config.py`; update there if a preferred model is available
